@@ -1,0 +1,14 @@
+[project]
+name = "predict-energy-production"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.basedpyright]
+typeCheckingMode = "basic"
+reportUnknownVariableType = false
+reportUnknownMemberType = false
+reportUnknownParameterType = false
+useLibraryCodeForTypes = true
