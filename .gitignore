@@ -1,5 +1,2 @@
 data/
 .DS_Store
-
-.cache.sqlite
-.cache
