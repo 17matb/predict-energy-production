@@ -12,54 +12,169 @@ class DataHandler(ABC):
 
     @abstractmethod
     def load(self) -> pd.DataFrame:
-        pass
-
-    @abstractmethod
-    def explore(self):
-        pass
-
-    @abstractmethod
-    def clean(self) -> pd.DataFrame:
-        pass
-
-    def save_to_db(self, table_name: str):
-        pass
-
-
-class APIHandler(DataHandler):
-    @abstractmethod
-    def load(self) -> pd.DataFrame:
         self.df = pd.DataFrame()
         return self.df
 
     def explore(self) -> dict:
         if self.df is None:
             raise ValueError('× Dataframe not found')
-
         exploration_info = {
             'shape': self.df.shape,
             'columns': self.df.columns.tolist(),
             'dtypes': self.df.dtypes.to_dict(),
             'missing': self.df.isna().sum().to_dict(),
         }
-
         print('-> EXPLORATION')
         print(f'· SHAPE: {exploration_info["shape"]}')
         print(f'· COLUMNS: {exploration_info["columns"]}')
         print(f'· DTYPES: {exploration_info["dtypes"]}')
         print(f'· MISSING: {exploration_info["missing"]}')
-
         return exploration_info
 
     def clean(self) -> pd.DataFrame:
         if self.df is None:
             raise ValueError('× Dataframe not found')
-
         print('\n-> CLEANING')
         return pd.DataFrame()
 
+    def save_to_db(self, table_name: str):
+        pass
 
-class OpenMeteoAPIHandler(APIHandler):
+
+class DateColumnCleaner:
+    @staticmethod
+    def ensure_datetime(df: pd.DataFrame, date_column: str) -> pd.DataFrame:
+        if date_column in df.columns:
+            df[date_column] = pd.to_datetime(df[date_column], errors='coerce')
+        return df
+
+    @staticmethod
+    def drop_duplicates_keep_last(df: pd.DataFrame, date_column: str) -> pd.DataFrame:
+        if date_column in df.columns:
+            df = df.drop_duplicates(subset=[date_column], keep='last')
+        return df
+
+    @staticmethod
+    def fill_missing_with_monthly_median(
+        df: pd.DataFrame,
+        date_column: str,
+        value_column: str,
+        min_date: pd.Timestamp,
+        max_date: pd.Timestamp,
+    ) -> pd.DataFrame:
+        if df.empty:
+            return df
+        df = df.set_index(date_column).reindex(
+            pd.date_range(start=min_date, end=max_date, freq='D')
+        )
+        df.index.name = date_column
+        df[value_column] = df[value_column].fillna(
+            df.groupby([df.index.year, df.index.month])[value_column].transform(  # pyright: ignore[reportAttributeAccessIssue]
+                'median'
+            )
+        )
+        return df.reset_index()
+
+    @staticmethod
+    def replace_outliers_with_monthly_median(
+        df: pd.DataFrame,
+        date_column: str,
+        value_column: str,
+        min_value: float,
+        max_value: float,
+    ) -> pd.DataFrame:
+        if df.empty:
+            return df
+        mask_outliers = (df[value_column] < min_value) | (df[value_column] > max_value)
+        monthly_medians = df.groupby(
+            [df[date_column].dt.year, df[date_column].dt.month]
+        )[value_column].transform('median')
+        df.loc[mask_outliers, value_column] = monthly_medians[mask_outliers]
+        return df
+
+
+class EolienneCSVHandler(DataHandler):
+    def load(self) -> pd.DataFrame:
+        print('\n-> LOADING DATA FROM CSV FILE...')
+        self.df = pd.read_csv('./data/prod/prod_eolienne.csv')
+        print('· Successfully loaded `Eolienne` CSV data into a dataframe')
+        print('· Dataframe preview:')
+        print(self.df.head(10))
+        return self.df
+
+    def clean(self) -> pd.DataFrame:
+        super().clean()
+        self.clean_df = self.df.copy()
+        print('· Ensuring `date` column type is datetime')
+        self.clean_df = DateColumnCleaner.ensure_datetime(self.clean_df, 'date')
+        print('· Dropping eventual duplicates')
+        self.clean_df = DateColumnCleaner.drop_duplicates_keep_last(
+            self.clean_df, 'date'
+        )
+        print(f'Clean dataframe preview:\n{self.clean_df.head(10)}')
+        print(f'Clean dataframe shape: {self.clean_df.shape}')
+        return self.clean_df
+
+
+class SolaireCSVHandler(DataHandler):
+    def load(self) -> pd.DataFrame:
+        print('\n-> LOADING DATA FROM CSV FILE...')
+        self.df = pd.read_csv('./data/prod/prod_solaire.csv')
+        print('· Successfully loaded `Solaire` CSV data into a dataframe')
+        print('· Dataframe preview:')
+        print(self.df.head(10))
+        return self.df
+
+    def clean(self) -> pd.DataFrame:
+        super().clean()
+        self.clean_df = self.df.copy()
+        print('· Ensuring `date` column type is datetime')
+        self.clean_df = DateColumnCleaner.ensure_datetime(self.clean_df, 'date')
+        print('· Dropping eventual duplicates')
+        self.clean_df = DateColumnCleaner.drop_duplicates_keep_last(
+            self.clean_df, 'date'
+        )
+        print(f'Clean dataframe preview:\n{self.clean_df.head(10)}')
+        print(f'Clean dataframe shape: {self.clean_df.shape}')
+        return self.clean_df
+
+
+class HydroCSVHandler(DataHandler):
+    def load(self) -> pd.DataFrame:
+        print('\n-> LOADING DATA FROM CSV FILE...')
+        self.df = pd.read_csv('./data/prod/prod_hydro.csv')
+        print('· Successfully loaded `Hydro` CSV data into a dataframe')
+        print('· Dataframe preview:')
+        print(self.df.head(10))
+        return self.df
+
+    def clean(self) -> pd.DataFrame:
+        super().clean()
+        self.clean_df = self.df.copy()
+        if (
+            'date_obs_elab' in self.clean_df.columns
+            and 'date' not in self.clean_df.columns
+        ):
+            print('· Renaming `date_obs_elab` column to `date`')
+            self.clean_df = self.clean_df.rename(columns={'date_obs_elab': 'date'})
+        print('· Ensuring `date` column type is datetime')
+        self.clean_df = DateColumnCleaner.ensure_datetime(self.clean_df, 'date')
+        print('· Dropping eventual duplicates')
+        self.clean_df = DateColumnCleaner.drop_duplicates_keep_last(
+            self.clean_df, 'date'
+        )
+        self.clean_df = self.clean_df[
+            self.clean_df.groupby(self.clean_df['date'].dt.to_period('M'))[
+                'date'
+            ].transform('count')
+            > 1
+        ]
+        print(f'Clean dataframe preview:\n{self.clean_df.head(10)}')
+        print(f'Clean dataframe shape: {self.clean_df.shape}')
+        return pd.DataFrame(self.clean_df)
+
+
+class OpenMeteoAPIHandler(DataHandler):
     def load(self) -> pd.DataFrame:
         url = 'https://archive-api.open-meteo.com/v1/archive'
         params = {
@@ -97,10 +212,13 @@ class OpenMeteoAPIHandler(APIHandler):
     def clean(self) -> pd.DataFrame:
         super().clean()
         self.clean_df = self.df.copy()
+        print('· Renaming `time` column to `date`')
+        self.clean_df = self.clean_df.rename(columns={'time': 'date'})
+        print(f'Clean dataframe preview:\n{self.clean_df.head(10)}')
         return self.clean_df
 
 
-class HubEauAPIHandler(APIHandler):
+class HubEauAPIHandler(DataHandler):
     def load(self) -> pd.DataFrame:
         url = 'https://hubeau.eaufrance.fr/api/v2/hydrometrie/obs_elab'
         params = {
@@ -130,26 +248,44 @@ class HubEauAPIHandler(APIHandler):
     def clean(self) -> pd.DataFrame:
         super().clean()
         self.clean_df = self.df.copy()
-        # display libelle_qualification values grouped by resultat_obs_elab to detect the outliers
+        print('· Renaming `date_obs_elab` column to `date`')
+        self.clean_df = self.clean_df.rename(columns={'date_obs_elab': 'date'})
         summary = self.clean_df.groupby('libelle_qualification')[
             'resultat_obs_elab'
         ].describe()
-        print(f'· SUMMARY\n{summary}')
-        print('· Deleting values where `libelle_qualification` == `Douteuse`')
+        print(
+            f'· Deleting {summary["count"]["Douteuse"]} values where `libelle_qualification` == `Douteuse`'
+        )
         print(f'· Original length: {len(self.clean_df)}')
         self.clean_df = self.clean_df[
             self.clean_df['libelle_qualification'] != 'Douteuse'
         ]
         print(f'· Length after cleaning: {len(self.clean_df)}')
+        print(f'Clean dataframe preview:\n{self.clean_df.head(10)}')
         return pd.DataFrame(self.clean_df)
 
 
-om_handler = OpenMeteoAPIHandler(client=None)
-om_handler.load()
-om_handler.explore()
-om_handler.clean()
+open_meteo_api_data = OpenMeteoAPIHandler(client=None)
+open_meteo_api_data.load()
+open_meteo_api_data.explore()
+open_meteo_api_data.clean()
 
-he_handler = HubEauAPIHandler(client=None)
-he_handler.load()
-he_handler.explore()
-he_handler.clean()
+hub_eau_api_data = HubEauAPIHandler(client=None)
+hub_eau_api_data.load()
+hub_eau_api_data.explore()
+hub_eau_api_data.clean()
+
+eolienne_csv_data = EolienneCSVHandler(client=None)
+eolienne_csv_data.load()
+eolienne_csv_data.explore()
+eolienne_csv_data.clean()
+
+solaire_csv_data = SolaireCSVHandler(client=None)
+solaire_csv_data.load()
+solaire_csv_data.explore()
+solaire_csv_data.clean()
+
+hydro_csv_data = HydroCSVHandler(client=None)
+hydro_csv_data.load()
+hydro_csv_data.explore()
+hydro_csv_data.clean()
