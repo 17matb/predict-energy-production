@@ -33,6 +33,7 @@ class OpenMeteoAPIHandler(DataHandler):
             daily_data = data.get('daily', {})
             self.df = pd.DataFrame(daily_data)
             print('· Successfully loaded API data into a dataframe')
+            print(f'· Column types: {data.get("daily_units", {})}')
             print('· Dataframe preview:')
             print(self.df.head(10))
         except requests.exceptions.RequestException as e:
