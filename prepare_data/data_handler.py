@@ -41,7 +41,7 @@ class DataHandler(ABC):
         pass
 
 
-class DateColumnCleaner:
+class CleaningUtils:
     @staticmethod
     def ensure_datetime(df: pd.DataFrame, date_column: str) -> pd.DataFrame:
         if date_column in df.columns:
@@ -57,17 +57,16 @@ class DateColumnCleaner:
     @staticmethod
     def fill_missing_with_monthly_median(
         df: pd.DataFrame,
-        date_column: str,
         value_column: str,
-        min_date: pd.Timestamp,
-        max_date: pd.Timestamp,
     ) -> pd.DataFrame:
         if df.empty:
             return df
-        df = df.set_index(date_column).reindex(
+        min_date = df['date'].min()
+        max_date = df['date'].max()
+        df = df.set_index('date').reindex(
             pd.date_range(start=min_date, end=max_date, freq='D')
         )
-        df.index.name = date_column
+        df.index.name = 'date'
         df[value_column] = df[value_column].fillna(
             df.groupby([df.index.year, df.index.month])[value_column].transform(  # pyright: ignore[reportAttributeAccessIssue]
                 'median'
@@ -78,17 +77,16 @@ class DateColumnCleaner:
     @staticmethod
     def replace_outliers_with_monthly_median(
         df: pd.DataFrame,
-        date_column: str,
         value_column: str,
-        min_value: float,
-        max_value: float,
     ) -> pd.DataFrame:
         if df.empty:
             return df
+        min_value = df[value_column].min()
+        max_value = df[value_column].max()
         mask_outliers = (df[value_column] < min_value) | (df[value_column] > max_value)
-        monthly_medians = df.groupby(
-            [df[date_column].dt.year, df[date_column].dt.month]
-        )[value_column].transform('median')
+        monthly_medians = df.groupby([df['date'].dt.year, df['date'].dt.month])[
+            value_column
+        ].transform('median')
         df.loc[mask_outliers, value_column] = monthly_medians[mask_outliers]
         return df
 
@@ -106,10 +104,15 @@ class EolienneCSVHandler(DataHandler):
         super().clean()
         self.clean_df = self.df.copy()
         print('· Ensuring `date` column type is datetime')
-        self.clean_df = DateColumnCleaner.ensure_datetime(self.clean_df, 'date')
+        self.clean_df = CleaningUtils.ensure_datetime(self.clean_df, 'date')
         print('· Dropping eventual duplicates')
-        self.clean_df = DateColumnCleaner.drop_duplicates_keep_last(
-            self.clean_df, 'date'
+        self.clean_df = CleaningUtils.drop_duplicates_keep_last(self.clean_df, 'date')
+        print('· Filling missing values with monthly median')
+        self.clean_df = CleaningUtils.fill_missing_with_monthly_median(
+            self.clean_df, 'prod_eolienne'
+        )
+        self.clean_df = CleaningUtils.replace_outliers_with_monthly_median(
+            self.clean_df, 'prod_eolienne'
         )
         print(f'Clean dataframe preview:\n{self.clean_df.head(10)}')
         print(f'Clean dataframe shape: {self.clean_df.shape}')
@@ -129,10 +132,15 @@ class SolaireCSVHandler(DataHandler):
         super().clean()
         self.clean_df = self.df.copy()
         print('· Ensuring `date` column type is datetime')
-        self.clean_df = DateColumnCleaner.ensure_datetime(self.clean_df, 'date')
+        self.clean_df = CleaningUtils.ensure_datetime(self.clean_df, 'date')
         print('· Dropping eventual duplicates')
-        self.clean_df = DateColumnCleaner.drop_duplicates_keep_last(
-            self.clean_df, 'date'
+        self.clean_df = CleaningUtils.drop_duplicates_keep_last(self.clean_df, 'date')
+        print('· Filling missing values with monthly median')
+        self.clean_df = CleaningUtils.fill_missing_with_monthly_median(
+            self.clean_df, 'prod_solaire'
+        )
+        self.clean_df = CleaningUtils.replace_outliers_with_monthly_median(
+            self.clean_df, 'prod_solaire'
         )
         print(f'Clean dataframe preview:\n{self.clean_df.head(10)}')
         print(f'Clean dataframe shape: {self.clean_df.shape}')
@@ -158,17 +166,23 @@ class HydroCSVHandler(DataHandler):
             print('· Renaming `date_obs_elab` column to `date`')
             self.clean_df = self.clean_df.rename(columns={'date_obs_elab': 'date'})
         print('· Ensuring `date` column type is datetime')
-        self.clean_df = DateColumnCleaner.ensure_datetime(self.clean_df, 'date')
+        self.clean_df = CleaningUtils.ensure_datetime(self.clean_df, 'date')
         print('· Dropping eventual duplicates')
-        self.clean_df = DateColumnCleaner.drop_duplicates_keep_last(
-            self.clean_df, 'date'
-        )
+        self.clean_df = CleaningUtils.drop_duplicates_keep_last(self.clean_df, 'date')
+        print('· Dropping irrelevant values')
         self.clean_df = self.clean_df[
             self.clean_df.groupby(self.clean_df['date'].dt.to_period('M'))[
                 'date'
             ].transform('count')
             > 1
         ]
+        print('· Filling missing values with monthly median')
+        self.clean_df = CleaningUtils.fill_missing_with_monthly_median(
+            pd.DataFrame(self.clean_df), 'prod_hydro'
+        )
+        self.clean_df = CleaningUtils.replace_outliers_with_monthly_median(
+            pd.DataFrame(self.clean_df), 'prod_hydro'
+        )
         print(f'Clean dataframe preview:\n{self.clean_df.head(10)}')
         print(f'Clean dataframe shape: {self.clean_df.shape}')
         return pd.DataFrame(self.clean_df)
