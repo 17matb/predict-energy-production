@@ -19,6 +19,8 @@ class EolienneCSVHandler(DataHandler):
         self.clean_df = CleaningUtils.ensure_datetime(self.clean_df, 'date')
         print('· Dropping eventual duplicates')
         self.clean_df = CleaningUtils.drop_duplicates_keep_last(self.clean_df, 'date')
+        print('· Dropping irrelevant months')
+        self.clean_df = CleaningUtils.drop_irrelevant_months(self.clean_df)
         print('· Filling missing values with monthly median')
         self.clean_df = CleaningUtils.fill_missing_with_monthly_median(
             self.clean_df, 'prod_eolienne'
@@ -47,6 +49,8 @@ class SolaireCSVHandler(DataHandler):
         self.clean_df = CleaningUtils.ensure_datetime(self.clean_df, 'date')
         print('· Dropping eventual duplicates')
         self.clean_df = CleaningUtils.drop_duplicates_keep_last(self.clean_df, 'date')
+        print('· Dropping irrelevant months')
+        self.clean_df = CleaningUtils.drop_irrelevant_months(self.clean_df)
         print('· Filling missing values with monthly median')
         self.clean_df = CleaningUtils.fill_missing_with_monthly_median(
             self.clean_df, 'prod_solaire'
@@ -81,13 +85,8 @@ class HydroCSVHandler(DataHandler):
         self.clean_df = CleaningUtils.ensure_datetime(self.clean_df, 'date')
         print('· Dropping eventual duplicates')
         self.clean_df = CleaningUtils.drop_duplicates_keep_last(self.clean_df, 'date')
-        print('· Dropping irrelevant values')
-        self.clean_df = self.clean_df[
-            self.clean_df.groupby(self.clean_df['date'].dt.to_period('M'))[
-                'date'
-            ].transform('count')
-            > 1
-        ]
+        print('· Dropping irrelevant months')
+        self.clean_df = CleaningUtils.drop_irrelevant_months(self.clean_df)
         print('· Filling missing values with monthly median')
         self.clean_df = CleaningUtils.fill_missing_with_monthly_median(
             pd.DataFrame(self.clean_df), 'prod_hydro'
