@@ -6,6 +6,7 @@ from prepare_data.csv_handlers import (
 )
 from prepare_data.merge_handler import DataMerger, DataSpliter
 
+
 def main():
     open_meteo_api_data = OpenMeteoAPIHandler(client=None)
     open_meteo_api_data.load()
@@ -16,7 +17,7 @@ def main():
     hub_eau_api_data.load()
     hub_eau_api_data.explore()
     hub_eau_api_data.clean()
-    
+
     eolienne_csv_data = EolienneCSVHandler(client=None)
     eolienne_csv_data.load()
     eolienne_csv_data.explore()
@@ -31,18 +32,19 @@ def main():
     hydro_csv_data.load()
     hydro_csv_data.explore()
     hydro_csv_data.clean()
-#----- data spliter 
+
+    # ----- data spliter
     data_s = DataSpliter(open_meteo_api_data.clean_df)
     data_winds, data_solar = data_s.split_data()
-# -----------data hydro merge---------------#
-    data_merge = DataMerger(hub_eau_api_data.clean_df,hydro_csv_data.clean_df, "hydro")
-    data_merge.merge_data("date")
-#------------data wind merge----------------#
-    data_merge = DataMerger(data_winds,eolienne_csv_data.clean_df, "eolienne")
-    data_merge.merge_data("date")
-#-----------------data solar merge-----------#
-    data_merge = DataMerger(data_solar,solaire_csv_data.clean_df, "solaire")
-    data_merge.merge_data("date")
+    # -----------data hydro merge---------------#
+    data_merge = DataMerger(hub_eau_api_data.clean_df, hydro_csv_data.clean_df, 'hydro')  # pyright: ignore[reportArgumentType]
+    data_merge.merge_data('date')
+    # ------------data wind merge----------------#
+    data_merge = DataMerger(data_winds, eolienne_csv_data.clean_df, 'eolienne')  # pyright: ignore[reportArgumentType]
+    data_merge.merge_data('date')
+    # -----------------data solar merge-----------#
+    data_merge = DataMerger(data_solar, solaire_csv_data.clean_df, 'solaire')  # pyright: ignore[reportArgumentType]
+    data_merge.merge_data('date')
 
 
 if __name__ == '__main__':
