@@ -1,5 +1,6 @@
 import pandas as pd 
 
+
 class DataSpliter:
     def __init__(self, df:pd.DataFrame)-> pd.DataFrame:
         self.df = df
@@ -27,7 +28,7 @@ class DataSpliter:
     
 class DataMerger():
     def __init__(self, api_df:pd.DataFrame, prod_df: pd.DataFrame, name:str)-> pd.DataFrame:
-    # Store Dataframes from api or csv sources 
+        # Store Dataframes from api or csv sources 
         self.api_df = api_df
         self.prod_df = prod_df
         self.name = name
@@ -40,18 +41,14 @@ class DataMerger():
         Returns:
             pd.DataFrame: merged dataframe
         """
-        #merge_df = None
-        
-    # Start with API DataFrame 
+        # Start with API DataFrame 
         if self.api_df is not None:
             self.merge_df = self.api_df.copy()
         else:
             raise ValueError("API Data is required to start merging !!")
-    # Merge with dataframe from csv 
+        # Merge with dataframe from csv 
         if self.prod_df is not None:
             self.merge_df = pd.merge(self.merge_df, self.prod_df, on=on_column, how=how)
             print(self.name)
             print(self.merge_df)
             return self.merge_df
-        
-        
