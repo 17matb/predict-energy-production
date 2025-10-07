@@ -21,6 +21,8 @@ class OpenMeteoAPIHandler(DataHandler):
                 'wind_speed_10m_mean',
                 'cloud_cover_mean',
                 'winddirection_10m_dominant',
+                'rain_sum',
+                'precipitation_hours',
                 'weather_code',
             ],
         }
