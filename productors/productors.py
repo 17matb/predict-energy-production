@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 import pandas as pd 
 
+from prepare_data.db_handler import DBHandler, supabase
 
 class Producteur(ABC):
-    def __init__(self, name, data_production):
+    def __init__(self, name):
         self.name = name
-        # Pandas DataFrame contains the production
-        self.data_production = data_production
+        print(name)
         
     @abstractmethod
     def load_data(self, start, end):
@@ -21,65 +21,66 @@ class Producteur(ABC):
     
 
 class ProducteurEolien(Producteur):        
-    def load_data(self, start, end):
-        mask = (self.data_production['date'] >= start) & (self.data_production['date'] <= end)
-        return self.data_production.loc[mask]
+    def load_data(self, start, end, table_name):
+        self.df = DBHandler(client=supabase).fetch(table_name=table_name)
+        mask = (self.df['date'] >= start) & (self.df['date'] <= end)
+        return self.df.loc[mask]
 
     def calculer_production(self, start, end):
         data = self.load_data(start, end)
         print(self.name)
         return {
-            "moyenne": data['production'].mean(),
-            "max": data['production'].max(),
-            "min": data['production'].min()
+            "moyenne": data['prod_eolienne'].mean(),
+            "max": data['prod_eolienne'].max(),
+            "min": data['prod_eolienne'].min()
         }
         
-class ProducteurSolaire(Producteur):
-    def load_data(self, start, end):
-        """Return the production data between two dates"""
+# class ProducteurSolaire(Producteur):
+#     def load_data(self, start, end):
+#         """Return the production data between two dates"""
         
-        mask = (self.data_production['date'] >= start) & (self.data_production['date'] <= end)
-        return self.data_production.loc[mask]
+#         mask = (self.data_production['date'] >= start) & (self.data_production['date'] <= end)
+#         return self.data_production.loc[mask]
 
-    def calculer_production(self, start, end):
-        """Calculate solar production stats and show days with zero production"""
-        data = self.load_data(start, end)
-        print(f"Producteur: {self.name}")
+#     def calculer_production(self, start, end):
+#         """Calculate solar production stats and show days with zero production"""
+#         data = self.load_data(start, end)
+#         print(f"Producteur: {self.name}")
 
-        # Filter rows with zero production
-        zero_prod = data[data["production"] == 0.0]
-        if not zero_prod.empty:
-            print(f"\n Days without solar production:\n{zero_prod[['date', 'production']]}")
-        else:
-            print("\n No days with zero solar production in this period.")
+#         # Filter rows with zero production
+#         zero_prod = data[data["production"] == 0.0]
+#         if not zero_prod.empty:
+#             print(f"\n Days without solar production:\n{zero_prod[['date', 'production']]}")
+#         else:
+#             print("\n No days with zero solar production in this period.")
 
-        # Return statistics
-        return {
-            "moyenne": data['production'].mean(),
-            "max": data['production'].max(),
-            "min": data['production'].min()
-        }
+#         # Return statistics
+#         return {
+#             "moyenne": data['production'].mean(),
+#             "max": data['production'].max(),
+#             "min": data['production'].min()
+#         }
 
 
-class ProducteurHydro(Producteur):
-    def load_data(self, start, end):
-        """Return the production data between two dates"""
-        mask = (self.data_production['date'] >= start) & (self.data_production['date'] <= end)
-        return self.data_production.loc[mask]
+# class ProducteurHydro(Producteur):
+#     def load_data(self, start, end):
+#         """Return the production data between two dates"""
+#         mask = (self.data_production['date'] >= start) & (self.data_production['date'] <= end)
+#         return self.data_production.loc[mask]
 
-    def calculer_production(self, start, end):
-        """Calculate Hydro production stats and show days with zero production"""
-        data = self.load_data(start, end)
-        print(f"Producteur: {self.name}")
-        # Filter rows with zero production
-        zero_prod = data[data["production"] == 0.0]
-        if not zero_prod.empty:
-            print(f"\n Days without Hydro production:\n{zero_prod[['date', 'production']]}")
-        else:
-            print("\n No days with zero Hydro production in this period.")
-        # Return statistics
-        return {
-            "moyenne": data['production'].mean(),
-            "max": data['production'].max(),
-            "min": data['production'].min()
-        }
+#     def calculer_production(self, start, end):
+#         """Calculate Hydro production stats and show days with zero production"""
+#         data = self.load_data(start, end)
+#         print(f"Producteur: {self.name}")
+#         # Filter rows with zero production
+#         zero_prod = data[data["production"] == 0.0]
+#         if not zero_prod.empty:
+#             print(f"\n Days without Hydro production:\n{zero_prod[['date', 'production']]}")
+#         else:
+#             print("\n No days with zero Hydro production in this period.")
+#         # Return statistics
+#         return {
+#             "moyenne": data['production'].mean(),
+#             "max": data['production'].max(),
+#             "min": data['production'].min()
+#         }
