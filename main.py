@@ -1,10 +1,12 @@
+from prepare_data import db_handler
 from prepare_data.api_handlers import HubEauAPIHandler, OpenMeteoAPIHandler
 from prepare_data.csv_handlers import (
     EolienneCSVHandler,
     HydroCSVHandler,
     SolaireCSVHandler,
 )
-from prepare_data.merge_handler import DataMerger, DataSpliter
+from prepare_data.db_handler import DBHandler, supabase
+from prepare_data.merge_handler import DataMerger, DataSpliter, HydroDataMerger
 
 
 def main():
@@ -37,14 +39,39 @@ def main():
     data_s = DataSpliter(open_meteo_api_data.clean_df)
     data_winds, data_solar = data_s.split_data()
     # -----------data hydro merge---------------#
-    data_merge = DataMerger(hub_eau_api_data.clean_df, hydro_csv_data.clean_df, 'hydro')  # pyright: ignore[reportArgumentType]
-    data_merge.merge_data('date')
+    hydro_data_merge = HydroDataMerger(
+        hub_eau_api_data.clean_df,  # pyright: ignore[reportArgumentType]
+        open_meteo_api_data.clean_df,
+        hydro_csv_data.clean_df,
+        'hydro',
+    )
+    hydro_data_merge.merge_data('date')
     # ------------data wind merge----------------#
-    data_merge = DataMerger(data_winds, eolienne_csv_data.clean_df, 'eolienne')  # pyright: ignore[reportArgumentType]
-    data_merge.merge_data('date')
+    eolienne_data_merge = DataMerger(data_winds, eolienne_csv_data.clean_df, 'eolienne')  # pyright: ignore[reportArgumentType]
+    eolienne_data_merge.merge_data('date')
     # -----------------data solar merge-----------#
-    data_merge = DataMerger(data_solar, solaire_csv_data.clean_df, 'solaire')  # pyright: ignore[reportArgumentType]
-    data_merge.merge_data('date')
+    solaire_data_merge = DataMerger(data_solar, solaire_csv_data.clean_df, 'solaire')  # pyright: ignore[reportArgumentType]
+    solaire_data_merge.merge_data('date')
+
+    eolienne_db_handler = DBHandler(
+        df_to_insert=eolienne_data_merge.merge_df,
+        table_name='eolienne',
+        client=supabase,
+    )
+    eolienne_db_handler.insert()
+
+    solaire_db_handler = DBHandler(
+        df_to_insert=solaire_data_merge.merge_df,
+        table_name='solaire',
+        client=supabase,
+    )
+    solaire_db_handler.insert()
+
+    print(hydro_data_merge.merge_df.head())
+    hydro_db_handler = DBHandler(
+        df_to_insert=hydro_data_merge.merge_df, table_name='hydro', client=supabase
+    )
+    hydro_db_handler.insert()
 
 
 if __name__ == '__main__':

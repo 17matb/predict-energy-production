@@ -64,3 +64,36 @@ class DataMerger:
             print(self.name)
             print(self.merge_df)
             return self.merge_df
+
+
+class HydroDataMerger(DataMerger):
+    def __init__(
+        self,
+        api_df: pd.DataFrame,
+        second_api_df: pd.DataFrame,
+        prod_df: pd.DataFrame,
+        name: str,
+    ):
+        super().__init__(api_df=api_df, prod_df=prod_df, name=name)
+        self.second_api_df = second_api_df
+
+    def merge_data(self, on_column, how: Any = 'inner'):
+        # Start with API DataFrame
+        if self.api_df is not None:
+            self.merge_df = self.api_df.copy()
+        else:
+            raise ValueError('API Data is required to start merging !!')
+        if self.prod_df is not None:
+            self.merge_df = pd.merge(self.merge_df, self.prod_df, on=on_column, how=how)
+            self.second_api_df = self.second_api_df[
+                ['date', 'rain_sum', 'precipitation_hours']
+            ]
+            self.merge_df = pd.merge(
+                self.merge_df,
+                self.second_api_df,  # pyright: ignore[reportArgumentType]
+                on=on_column,
+                how=how,
+            )
+            print(self.name)
+            print(self.merge_df)
+            return self.merge_df

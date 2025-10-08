@@ -1,11 +1,21 @@
 import pandas as pd
 import requests
+
 from prepare_data.cleaning_utils import CleaningUtils
 from prepare_data.data_handler import DataHandler
 
 
 class OpenMeteoAPIHandler(DataHandler):
     def load(self) -> pd.DataFrame:
+        """
+        Fetch data from open meteo API and returns it as a DataFrame.
+
+        Parameters:
+            None
+
+        Returns:
+            self.df (pd.DataFrame): DataFrame from fetched API data.
+        """
         url = 'https://archive-api.open-meteo.com/v1/archive'
         params = {
             'latitude': '43.62505',
@@ -43,6 +53,15 @@ class OpenMeteoAPIHandler(DataHandler):
         return self.df
 
     def clean(self) -> pd.DataFrame:
+        """
+        Performs a selection of cleaning tasks on self.df and returns a new clean DataFrame.
+
+        Parameters:
+            None
+
+        Returns:
+            self.clean_df (pd.DataFrame): Clean DataFrame.
+        """
         super().clean()
         self.clean_df = self.df.copy()
         print('· Renaming `time` column to `date`')
@@ -55,6 +74,15 @@ class OpenMeteoAPIHandler(DataHandler):
 
 class HubEauAPIHandler(DataHandler):
     def load(self) -> pd.DataFrame:
+        """
+        Fetch data from hub eau API and returns it as a DataFrame.
+
+        Parameters:
+            None
+
+        Returns:
+            self.df (pd.DataFrame): DataFrame from fetched API data.
+        """
         url = 'https://hubeau.eaufrance.fr/api/v2/hydrometrie/obs_elab'
         params = {
             'code_entite': 'Y321002101',
@@ -81,24 +109,21 @@ class HubEauAPIHandler(DataHandler):
         return self.df
 
     def clean(self) -> pd.DataFrame:
+        """
+        Performs a selection of cleaning tasks on self.df and returns a new clean DataFrame.
+
+        Parameters:
+            None
+
+        Returns:
+            self.clean_df (pd.DataFrame): Clean DataFrame.
+        """
         super().clean()
         self.clean_df = self.df.copy()
         print('· Renaming `date_obs_elab` column to `date`')
         self.clean_df = self.clean_df.rename(columns={'date_obs_elab': 'date'})
         print('· Ensuring `date` column type is datetime')
         self.clean_df = CleaningUtils.ensure_datetime(self.clean_df, 'date')
-        cols_to_drop = [
-            'code_site',
-            'code_station',
-            'longitude',
-            'latitude',
-            'libelle_statut',
-            'code_methode',
-            'date_prod',
-            'code_statut',
-            'code_qualification',
-        ]
-        self.clean_df = self.clean_df.drop(cols_to_drop, axis=1)
         summary = self.clean_df.groupby('libelle_qualification')[
             'resultat_obs_elab'
         ].describe()
@@ -109,6 +134,21 @@ class HubEauAPIHandler(DataHandler):
         self.clean_df = self.clean_df[
             self.clean_df['libelle_qualification'] != 'Douteuse'
         ]
+        cols_to_drop = [
+            'code_site',
+            'code_station',
+            'longitude',
+            'latitude',
+            'libelle_statut',
+            'code_methode',
+            'date_prod',
+            'code_statut',
+            'code_qualification',
+            'libelle_methode',
+            'libelle_qualification',
+            'grandeur_hydro_elab',
+        ]
+        self.clean_df = self.clean_df.drop(cols_to_drop, axis=1)
         print(f'· Length after cleaning: {len(self.clean_df)}')
         print(f'Clean dataframe preview:\n{self.clean_df.head(10)}')
         return pd.DataFrame(self.clean_df)
