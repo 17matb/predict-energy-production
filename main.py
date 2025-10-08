@@ -53,25 +53,23 @@ def main():
     solaire_data_merge = DataMerger(data_solar, solaire_csv_data.clean_df, 'solaire')  # pyright: ignore[reportArgumentType]
     solaire_data_merge.merge_data('date')
 
-    eolienne_db_handler = DBHandler(
+    eolienne_db_handler = DBHandler(client=supabase)
+    eolienne_db_handler.insert(
         df_to_insert=eolienne_data_merge.merge_df,
         table_name='eolienne',
-        client=supabase,
     )
-    eolienne_db_handler.insert()
 
-    solaire_db_handler = DBHandler(
+    solaire_db_handler = DBHandler(client=supabase)
+    solaire_db_handler.insert(
         df_to_insert=solaire_data_merge.merge_df,
         table_name='solaire',
-        client=supabase,
     )
-    solaire_db_handler.insert()
 
-    print(hydro_data_merge.merge_df.head())
-    hydro_db_handler = DBHandler(
-        df_to_insert=hydro_data_merge.merge_df, table_name='hydro', client=supabase
+    hydro_db_handler = DBHandler(client=supabase)
+    hydro_db_handler.insert(
+        df_to_insert=hydro_data_merge.merge_df,
+        table_name='hydro',
     )
-    hydro_db_handler.insert()
 
 
 if __name__ == '__main__':
