@@ -49,3 +49,11 @@ class CleaningUtils:
         ].transform('median')
         df.loc[mask_outliers, value_column] = monthly_medians[mask_outliers]
         return df
+
+    @staticmethod
+    def drop_irrelevant_months(df: pd.DataFrame) -> pd.DataFrame:
+        if df.empty or 'date' not in df.columns:
+            return df
+        df = df[df.groupby(df['date'].dt.to_period('M'))['date'].transform('count') > 1]  # pyright: ignore[reportAssignmentType]
+        return df
+
