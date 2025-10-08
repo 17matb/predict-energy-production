@@ -87,18 +87,6 @@ class HubEauAPIHandler(DataHandler):
         self.clean_df = self.clean_df.rename(columns={'date_obs_elab': 'date'})
         print('· Ensuring `date` column type is datetime')
         self.clean_df = CleaningUtils.ensure_datetime(self.clean_df, 'date')
-        cols_to_drop = [
-            'code_site',
-            'code_station',
-            'longitude',
-            'latitude',
-            'libelle_statut',
-            'code_methode',
-            'date_prod',
-            'code_statut',
-            'code_qualification',
-        ]
-        self.clean_df = self.clean_df.drop(cols_to_drop, axis=1)
         summary = self.clean_df.groupby('libelle_qualification')[
             'resultat_obs_elab'
         ].describe()
@@ -109,6 +97,21 @@ class HubEauAPIHandler(DataHandler):
         self.clean_df = self.clean_df[
             self.clean_df['libelle_qualification'] != 'Douteuse'
         ]
+        cols_to_drop = [
+            'code_site',
+            'code_station',
+            'longitude',
+            'latitude',
+            'libelle_statut',
+            'code_methode',
+            'date_prod',
+            'code_statut',
+            'code_qualification',
+            'libelle_methode',
+            'libelle_qualification',
+            'grandeur_hydro_elab',
+        ]
+        self.clean_df = self.clean_df.drop(cols_to_drop, axis=1)
         print(f'· Length after cleaning: {len(self.clean_df)}')
         print(f'Clean dataframe preview:\n{self.clean_df.head(10)}')
         return pd.DataFrame(self.clean_df)

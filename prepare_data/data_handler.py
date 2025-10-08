@@ -1,9 +1,5 @@
 from abc import ABC, abstractmethod
 import pandas as pd
-from supabase import create_client
-
-
-# supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 class DataHandler(ABC):
@@ -36,6 +32,3 @@ class DataHandler(ABC):
             raise ValueError('× Dataframe not found')
         print('\n-> CLEANING')
         return pd.DataFrame()
-
-    def save_to_db(self, table_name: str):
-        pass

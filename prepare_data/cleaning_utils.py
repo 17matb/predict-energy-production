@@ -54,5 +54,6 @@ class CleaningUtils:
     def drop_irrelevant_months(df: pd.DataFrame) -> pd.DataFrame:
         if df.empty or 'date' not in df.columns:
             return df
-        df = df[df.groupby(df['date'].dt.to_period('M'))['date'].transform('count') > 1]
+        df = df[df.groupby(df['date'].dt.to_period('M'))['date'].transform('count') > 1]  # pyright: ignore[reportAssignmentType]
         return df
+
