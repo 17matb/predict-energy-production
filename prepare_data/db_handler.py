@@ -64,9 +64,3 @@ class DBHandler:
         except Exception as e:
             print(f'× Database fetch failed: {e}')
         return self.df_fetched
-
-
-df = pd.DataFrame({'id': [2], 'value': ['test']})
-
-tester = DBHandler(supabase)
-tester.insert(df, 'test')
