@@ -63,6 +63,7 @@ class DataMerger:
             self.merge_df = pd.merge(self.merge_df, self.prod_df, on=on_column, how=how)
             print(self.name)
             print(self.merge_df)
+
             return self.merge_df
 
 
@@ -97,3 +98,4 @@ class HydroDataMerger(DataMerger):
             print(self.name)
             print(self.merge_df)
             return self.merge_df
+

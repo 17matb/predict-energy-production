@@ -7,6 +7,7 @@ from prepare_data.csv_handlers import (
 )
 from prepare_data.db_handler import DBHandler, supabase
 from prepare_data.merge_handler import DataMerger, DataSpliter, HydroDataMerger
+from productors.productors import ProducteurEolien, ProducteurSolaire, ProducteurHydro
 
 
 def main():
@@ -71,6 +72,17 @@ def main():
         table_name='hydro',
     )
 
+    data_eol = ProducteurEolien("eolienne")
+    data_eol.load_data("2016-11-10", "2023-09-11")
+    data_eol.calculer_production("2016-11-10", "2023-09-11")
+
+    data_eol = ProducteurSolaire("solaire")
+    data_eol.load_data("2016-11-10", "2023-09-11")
+    data_eol.calculer_production("2016-11-10", "2023-09-11")
+
+    data_eol = ProducteurHydro("hydro")
+    data_eol.load_data("2016-11-10", "2023-09-11")
+    data_eol.calculer_production("2016-11-10", "2023-09-11")
 
 if __name__ == '__main__':
     main()
