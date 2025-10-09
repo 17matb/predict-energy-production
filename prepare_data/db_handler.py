@@ -32,13 +32,20 @@ class DBHandler:
         Returns:
             None
         """
-        df_to_insert['date'] = df_to_insert['date'].dt.strftime('%Y-%m-%d')
+        if 'date' in df_to_insert.columns:
+            df_to_insert['date'] = df_to_insert['date'].dt.strftime('%Y-%m-%d')
         records = df_to_insert.to_dict(orient='records')
         try:
-            response = self.client.table(table_name).insert(records).execute()
-            print(response)
+            test_fetch = self.client.table(table_name).select('*').limit(1).execute()
+            if len(test_fetch.data) == 0:
+                response = self.client.table(table_name).insert(records).execute()
+                print(response)
+            else:
+                raise Exception(
+                    f'Table `{table_name}` has to be empty before data insertion'
+                )
         except Exception as e:
-            print(f'Error: {e}')
+            print(f'× Database insertion failed: {e}')
         return None
 
     def fetch(self, table_name: str) -> pd.DataFrame:
@@ -54,7 +61,12 @@ class DBHandler:
         try:
             response = self.client.table(table_name).select('*').execute()
             self.df_fetched = pd.DataFrame(response.model_dump().get('data', {}))
-            print(self.df_fetched.head())
         except Exception as e:
-            print(f'Error: {e}')
+            print(f'× Database fetch failed: {e}')
         return self.df_fetched
+
+
+df = pd.DataFrame({'id': [2], 'value': ['test']})
+
+tester = DBHandler(supabase)
+tester.insert(df, 'test')
