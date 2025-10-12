@@ -1,11 +1,9 @@
 from abc import ABC, abstractmethod
+
 import pandas as pd
 
 
 class DataHandler(ABC):
-    def __init__(self, client):
-        self.client = client
-
     @abstractmethod
     def load(self) -> pd.DataFrame:
         self.df = pd.DataFrame()
