@@ -27,6 +27,12 @@ def main():
         action='store_true',
         help='returns production values for a date range',
     )
+    parser.add_argument(
+        '-P',
+        '--predict',
+        action='store_true',
+        help='predicts production',
+    )
     arguments = parser.parse_args()
     pipeline = Pipeline(client=supabase)
     if arguments.explore:
@@ -35,6 +41,8 @@ def main():
         pipeline.db_insertion()
     if arguments.production:
         pipeline.get_production_data()
+    if arguments.predict:
+        pipeline.start_prediction()
 
 
 if __name__ == '__main__':
