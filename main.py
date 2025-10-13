@@ -100,28 +100,16 @@ def notmain():
     )
 
     data_eol = ProducteurEolien('eolienne')
-    data_eol.load_data('2016-11-10', '2023-09-11')
-    data_eol.calculer_production('2016-11-10', '2023-09-11')
-
-    data_eol = ProducteurSolaire('solaire')
-    data_eol.load_data('2016-11-10', '2023-09-11')
-    data_eol.calculer_production('2016-11-10', '2023-09-11')
-
-    data_eol = ProducteurHydro('hydro')
-    data_eol.load_data('2016-11-10', '2023-09-11')
-    data_eol.calculer_production('2016-11-10', '2023-09-11')
-
-    data_eol = ProducteurEolien("eolienne")
     data_eol.load_data()
     data_eol.calculer_production()
 
-    data_eol = ProducteurSolaire("solaire")
-    data_eol.load_data()
-    data_eol.calculer_production()
+    data_sol = ProducteurSolaire('solaire')
+    data_sol.load_data()
+    data_sol.calculer_production()
 
-    data_eol = ProducteurHydro("hydro")
-    data_eol.load_data()
-    data_eol.calculer_production()
+    data_hyd = ProducteurHydro('hydro')
+    data_hyd.load_data()
+    data_hyd.calculer_production()
 
 
 if __name__ == '__main__':
