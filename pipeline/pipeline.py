@@ -1,5 +1,4 @@
 from datetime import datetime
-from math import e
 
 from prepare_data.api_handlers import HubEauAPIHandler, OpenMeteoAPIHandler
 from prepare_data.csv_handlers import (
