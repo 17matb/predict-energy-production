@@ -23,38 +23,77 @@ class Pipeline:
         self.client = client
 
     def data_loading(self):
-        for handler in self.handlers.values():
+        """
+        Loops in handlers dict to call their `load()` method.
+
+        Parameters:
+            self
+
+        Returns:
+            self
+        """
+        for title, handler in self.handlers.items():
+            print(f'\n-> DATA LOADING FOR `{title}` STARTING...')
             handler.load()
         self._is_loaded = True
         return self
 
     def data_exploration(self):
+        """
+        Loops in handlers dict to call their `explore()` method.
+
+        Parameters:
+            self
+
+        Returns:
+            self
+        """
         if not self._is_loaded:
             print('· Data needs to be loaded, loading data...')
             self.data_loading()
-        for handler in self.handlers.values():
+        for title, handler in self.handlers.items():
+            print(f'\n-> DATA EXPLORATION FOR `{title}`:')
             handler.explore()
         return self
 
     def data_cleaning(self):
+        """
+        Loops in handlers dict to call their `clean()` method.
+
+        Parameters:
+            self
+
+        Returns:
+            self
+        """
         if not self._is_loaded:
             print('· Data needs to be loaded, loading data...')
             self.data_loading()
-        for handler in self.handlers.values():
+        for title, handler in self.handlers.items():
+            print(f'\n-> DATA CLEANING FOR `{title}` STARTING...')
             handler.clean()
         self._is_clean = True
         return self
 
     def db_insertion(self):
+        """
+        Loops in handlers dict to call their load() method.
+
+        Parameters:
+            self
+
+        Returns:
+            self
+        """
         if not self._is_clean:
             print('· Data needs to be clean, cleaning data...')
             self.data_cleaning()
 
-        print('· Splitting data...')
+        print('\n· Splitting data...')
         data_s = DataSpliter(self.handlers['open_meteo_api_data'].clean_df)
         data_winds, data_solar = data_s.split_data()
 
-        print('· Merging data...')
+        print('\n· Merging data...')
         hydro_merge = HydroDataMerger(
             self.handlers['hub_eau_api_data'].clean_df,
             self.handlers['open_meteo_api_data'].clean_df,
@@ -77,12 +116,12 @@ class Pipeline:
         )
         solar_merge.merge_data('date')
 
-        print('· Inserting in database...')
+        print('\n· Inserting in database...')
         db = DBHandler(client=self.client)
 
         db.insert(df_to_insert=wind_merge.merge_df, table_name='eolienne')
         db.insert(df_to_insert=solar_merge.merge_df, table_name='solaire')
         db.insert(df_to_insert=hydro_merge.merge_df, table_name='hydro')
 
-        print('· Database insertion complete')
+        print('· Database insertion process complete')
         return self
