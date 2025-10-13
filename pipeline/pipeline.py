@@ -1,3 +1,6 @@
+from datetime import datetime
+from math import e
+
 from prepare_data.api_handlers import HubEauAPIHandler, OpenMeteoAPIHandler
 from prepare_data.csv_handlers import (
     EolienneCSVHandler,
@@ -6,6 +9,7 @@ from prepare_data.csv_handlers import (
 )
 from prepare_data.db_handler import DBHandler
 from prepare_data.merge_handler import DataMerger, DataSpliter, HydroDataMerger
+from productors.productors import ProducteurEolien, ProducteurHydro, ProducteurSolaire
 from supabase import Client
 
 
@@ -125,3 +129,34 @@ class Pipeline:
 
         print('· Database insertion process complete')
         return self
+
+    def get_production_data(self):
+        start_date_input = input(
+            'Start date (leave blank for full range) <YYYY-MM-DD>: '
+        )
+        if not start_date_input:
+            start_date = None
+            end_date = None
+        else:
+            start_year, start_month, start_day = map(int, start_date_input.split('-'))
+            start_date = datetime(start_year, start_month, start_day).date()
+            end_date_input = input('End date <YYYY-MM-DD>: ')
+            if not end_date_input:
+                raise ValueError('× End date is needed')
+            end_year, end_month, end_day = map(int, end_date_input.split('-'))
+            end_date = datetime(end_year, end_month, end_day).date()
+            if start_date > end_date:
+                raise ValueError('× End date cannot be before start date')
+        print(f'· Start date: {start_date}, end date: {end_date}')
+
+        data_eol = ProducteurEolien('eolienne')
+        data_eol.load_data(start=start_date, end=end_date)
+        data_eol.calculer_production()
+
+        data_sol = ProducteurSolaire('solaire')
+        data_sol.load_data(start=start_date, end=end_date)
+        data_sol.calculer_production()
+
+        data_hyd = ProducteurHydro('hydro')
+        data_hyd.load_data(start=start_date, end=end_date)
+        data_hyd.calculer_production()
