@@ -26,18 +26,16 @@ class OpenMeteoAPIHandler(DataHandler):
             'daily': [
                 'daylight_duration',
                 'sunshine_duration',
-                'temperature_2m_mean',
                 'wind_gusts_10m_mean',
                 'wind_speed_10m_mean',
                 'cloud_cover_mean',
                 'winddirection_10m_dominant',
                 'rain_sum',
                 'precipitation_hours',
-                'weather_code',
             ],
         }
         try:
-            print('\n-> FETCHING DATA FROM OPEN-METEO API...')
+            print('-> FETCHING DATA FROM OPEN-METEO API...')
             response = requests.get(url, params)
             response.raise_for_status()
             print(f'· URL: {response.url}')
@@ -92,7 +90,7 @@ class HubEauAPIHandler(DataHandler):
             'size': '2000',
         }
         try:
-            print("\n-> FETCHING DATA FROM HUB'EAU API...")
+            print("-> FETCHING DATA FROM HUB'EAU API...")
             response = requests.get(url, params=params)
             response.raise_for_status()
             print(f'· URL: {response.url}')

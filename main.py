@@ -1,4 +1,6 @@
-from prepare_data import db_handler
+import argparse
+
+from pipeline.pipeline import Pipeline
 from prepare_data.api_handlers import HubEauAPIHandler, OpenMeteoAPIHandler
 from prepare_data.csv_handlers import (
     EolienneCSVHandler,
@@ -7,31 +9,56 @@ from prepare_data.csv_handlers import (
 )
 from prepare_data.db_handler import DBHandler, supabase
 from prepare_data.merge_handler import DataMerger, DataSpliter, HydroDataMerger
-from productors.productors import ProducteurEolien, ProducteurSolaire, ProducteurHydro
+from productors.productors import ProducteurEolien, ProducteurHydro, ProducteurSolaire
 
 
 def main():
-    open_meteo_api_data = OpenMeteoAPIHandler(client=None)
+    parser = argparse.ArgumentParser(
+        prog='predict-energy-production',
+        description='Predict future energy production',
+    )
+    parser.add_argument(
+        '-e',
+        '--explore',
+        action='store_true',
+        help='returns data exploration',
+    )
+    parser.add_argument(
+        '-i',
+        '--insert',
+        action='store_true',
+        help='insert clean data into the database',
+    )
+    arguments = parser.parse_args()
+    pipeline = Pipeline(client=supabase)
+    if arguments.explore:
+        pipeline.data_exploration()
+    if arguments.insert:
+        pipeline.db_insertion()
+
+
+def notmain():
+    open_meteo_api_data = OpenMeteoAPIHandler()
     open_meteo_api_data.load()
     open_meteo_api_data.explore()
     open_meteo_api_data.clean()
 
-    hub_eau_api_data = HubEauAPIHandler(client=None)
+    hub_eau_api_data = HubEauAPIHandler()
     hub_eau_api_data.load()
     hub_eau_api_data.explore()
     hub_eau_api_data.clean()
 
-    eolienne_csv_data = EolienneCSVHandler(client=None)
+    eolienne_csv_data = EolienneCSVHandler()
     eolienne_csv_data.load()
     eolienne_csv_data.explore()
     eolienne_csv_data.clean()
 
-    solaire_csv_data = SolaireCSVHandler(client=None)
+    solaire_csv_data = SolaireCSVHandler()
     solaire_csv_data.load()
     solaire_csv_data.explore()
     solaire_csv_data.clean()
 
-    hydro_csv_data = HydroCSVHandler(client=None)
+    hydro_csv_data = HydroCSVHandler()
     hydro_csv_data.load()
     hydro_csv_data.explore()
     hydro_csv_data.clean()
@@ -72,6 +99,18 @@ def main():
         table_name='hydro',
     )
 
+    data_eol = ProducteurEolien('eolienne')
+    data_eol.load_data('2016-11-10', '2023-09-11')
+    data_eol.calculer_production('2016-11-10', '2023-09-11')
+
+    data_eol = ProducteurSolaire('solaire')
+    data_eol.load_data('2016-11-10', '2023-09-11')
+    data_eol.calculer_production('2016-11-10', '2023-09-11')
+
+    data_eol = ProducteurHydro('hydro')
+    data_eol.load_data('2016-11-10', '2023-09-11')
+    data_eol.calculer_production('2016-11-10', '2023-09-11')
+
     data_eol = ProducteurEolien("eolienne")
     data_eol.load_data()
     data_eol.calculer_production()
@@ -83,6 +122,7 @@ def main():
     data_eol = ProducteurHydro("hydro")
     data_eol.load_data()
     data_eol.calculer_production()
+
 
 if __name__ == '__main__':
     main()

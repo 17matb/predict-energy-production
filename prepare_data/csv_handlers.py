@@ -1,11 +1,12 @@
 import pandas as pd
+
 from prepare_data.cleaning_utils import CleaningUtils
 from prepare_data.data_handler import DataHandler
 
 
 class EolienneCSVHandler(DataHandler):
     def load(self) -> pd.DataFrame:
-        print('\n-> LOADING DATA FROM CSV FILE...')
+        print('-> LOADING DATA FROM CSV FILE...')
         self.df = pd.read_csv('./data/prod/prod_eolienne.csv')
         print('· Successfully loaded `Eolienne` CSV data into a dataframe')
         print('· Dataframe preview:')
@@ -35,7 +36,7 @@ class EolienneCSVHandler(DataHandler):
 
 class SolaireCSVHandler(DataHandler):
     def load(self) -> pd.DataFrame:
-        print('\n-> LOADING DATA FROM CSV FILE...')
+        print('-> LOADING DATA FROM CSV FILE...')
         self.df = pd.read_csv('./data/prod/prod_solaire.csv')
         print('· Successfully loaded `Solaire` CSV data into a dataframe')
         print('· Dataframe preview:')
@@ -65,7 +66,7 @@ class SolaireCSVHandler(DataHandler):
 
 class HydroCSVHandler(DataHandler):
     def load(self) -> pd.DataFrame:
-        print('\n-> LOADING DATA FROM CSV FILE...')
+        print('-> LOADING DATA FROM CSV FILE...')
         self.df = pd.read_csv('./data/prod/prod_hydro.csv')
         print('· Successfully loaded `Hydro` CSV data into a dataframe')
         print('· Dataframe preview:')

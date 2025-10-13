@@ -1,11 +1,9 @@
 from abc import ABC, abstractmethod
+
 import pandas as pd
 
 
 class DataHandler(ABC):
-    def __init__(self, client):
-        self.client = client
-
     @abstractmethod
     def load(self) -> pd.DataFrame:
         self.df = pd.DataFrame()
@@ -20,7 +18,6 @@ class DataHandler(ABC):
             'dtypes': self.df.dtypes.to_dict(),
             'missing': self.df.isna().sum().to_dict(),
         }
-        print('-> EXPLORATION')
         print(f'· SHAPE: {exploration_info["shape"]}')
         print(f'· COLUMNS: {exploration_info["columns"]}')
         print(f'· DTYPES: {exploration_info["dtypes"]}')
@@ -30,5 +27,4 @@ class DataHandler(ABC):
     def clean(self) -> pd.DataFrame:
         if self.df is None:
             raise ValueError('× Dataframe not found')
-        print('\n-> CLEANING')
         return pd.DataFrame()

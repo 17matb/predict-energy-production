@@ -45,7 +45,7 @@ class DBHandler:
                     f'Table `{table_name}` has to be empty before data insertion'
                 )
         except Exception as e:
-            print(f'× Database insertion failed: {e}')
+            print(f'× Database insertion did not happen: {e}')
         return None
 
     def fetch(self, table_name: str) -> pd.DataFrame:
