@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from models.model import run_model
 from prepare_data.api_handlers import HubEauAPIHandler, OpenMeteoAPIHandler
 from prepare_data.csv_handlers import (
     EolienneCSVHandler,
@@ -159,3 +160,6 @@ class Pipeline:
         data_hyd = ProducteurHydro('hydro')
         data_hyd.load_data(start=start_date, end=end_date)
         data_hyd.calculer_production()
+
+    def start_prediction(self):
+        run_model()
