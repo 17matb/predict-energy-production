@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from models.model import run_model
+from models.model import Predict
 from prepare_data.api_handlers import HubEauAPIHandler, OpenMeteoAPIHandler
 from prepare_data.csv_handlers import (
     EolienneCSVHandler,
@@ -162,4 +162,4 @@ class Pipeline:
         data_hyd.calculer_production()
 
     def start_prediction(self):
-        run_model()
+        Predict().load().prepare().run_model()
