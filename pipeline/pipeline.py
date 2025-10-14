@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from models.model import run_model
+#from models.model import run_model
 from prepare_data.api_handlers import HubEauAPIHandler, OpenMeteoAPIHandler
 from prepare_data.csv_handlers import (
     EolienneCSVHandler,
@@ -11,7 +11,7 @@ from prepare_data.db_handler import DBHandler
 from prepare_data.merge_handler import DataMerger, DataSpliter, HydroDataMerger
 from productors.productors import ProducteurEolien, ProducteurHydro, ProducteurSolaire
 from supabase import Client
-
+from models.lin_reg import ModelLinearRegression
 
 class Pipeline:
     def __init__(self, client: Client):
@@ -162,4 +162,11 @@ class Pipeline:
         data_hyd.calculer_production()
 
     def start_prediction(self):
-        run_model()
+            """
+        Start ML prediction for eolienne production using Linear Regression.
+        """
+            # Initialize and run the Linear Regression model
+            model_lr = ModelLinearRegression()
+            model_lr.load()
+            model_lr.split_and_standardize()  
+            mse, r2 = model_lr.run_model()
