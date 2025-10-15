@@ -1,5 +1,5 @@
 import pandas as pd
-import joblib
+import pickle
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from models.data_preparation import prepare_data
@@ -40,10 +40,18 @@ def evaluate_model(model, X_test, y_test):
     return mae, mse, r2
 
 
-def save_model(model, path: str = "models/random_forest_model.joblib"):
-    """Sauvegarde le modèle entraîné dans un fichier .joblib."""
-    joblib.dump(model, path)
-    print(f"\n Modèle sauvegardé sous : {path}")
+def save_model(model, path: str = "models/random_forest_model.pkl"):
+    """
+    Sauvegarde le modèle entraîné dans un fichier .pkl à l'aide de pickle.
+    
+    Args:
+        model: Le modèle entraîné (ex : RandomForestRegressor)
+        path (str): Chemin du fichier de sortie (.pkl)
+    """
+    with open(path, "wb") as file:  # 'wb' = écriture binaire
+        pickle.dump(model, file)
+
+    print(f"\n Modèle sauvegardé au format .pkl sous : {path}")
 
 
 def run_model():
