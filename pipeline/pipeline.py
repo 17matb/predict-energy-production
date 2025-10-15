@@ -1,6 +1,6 @@
 from datetime import datetime
 
-#from models.model import run_model
+from models.model import run_model
 from prepare_data.api_handlers import HubEauAPIHandler, OpenMeteoAPIHandler
 from prepare_data.csv_handlers import (
     EolienneCSVHandler,
