@@ -1,7 +1,22 @@
 import argparse
 
+from fastapi import FastAPI
 from pipeline.pipeline import Pipeline
 from prepare_data.db_handler import supabase
+from routes import predict
+
+app = FastAPI(
+    title='predict-energy-production',
+    description='predict-energy-production API',
+    version='1.0.0',
+)
+
+app.include_router(predict.router)
+
+
+@app.get('/')
+def read_root():
+    return {'project': 'predict-energy-production'}
 
 
 def main():
