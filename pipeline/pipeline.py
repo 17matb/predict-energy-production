@@ -12,7 +12,6 @@ from prepare_data.merge_handler import DataMerger, DataSpliter, HydroDataMerger
 from productors.productors import ProducteurEolien, ProducteurHydro, ProducteurSolaire
 from supabase import Client
 
-
 class Pipeline:
     def __init__(self, client: Client):
         self.handlers = {
