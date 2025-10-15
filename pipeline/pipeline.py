@@ -162,4 +162,9 @@ class Pipeline:
         data_hyd.calculer_production()
 
     def start_prediction(self):
+        """
+        Lance la phase de prédiction (entraînement, évaluation et sauvegarde du modèle).
+        """
+        print("\n Démarrage du processus de prédiction...")
         run_model()
+
