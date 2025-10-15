@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import requests
 from models.model import run_model
 from prepare_data.api_handlers import HubEauAPIHandler, OpenMeteoAPIHandler
 from prepare_data.csv_handlers import (
@@ -11,6 +12,7 @@ from prepare_data.db_handler import DBHandler
 from prepare_data.merge_handler import DataMerger, DataSpliter, HydroDataMerger
 from productors.productors import ProducteurEolien, ProducteurHydro, ProducteurSolaire
 from supabase import Client
+
 
 class Pipeline:
     def __init__(self, client: Client):
@@ -160,9 +162,33 @@ class Pipeline:
         data_hyd.load_data(start=start_date, end=end_date)
         data_hyd.calculer_production()
 
-    def start_prediction(self):
+    def start_train(self):
         """
         Lance la phase de prédiction (entraînement, évaluation et sauvegarde du modèle).
         """
-        print("\n Démarrage du processus de prédiction...")
+        print('\n Démarrage du processus de prédiction...')
         run_model()
+
+    def fetch_prediction(
+        self, date=None, wind_gusts=None, wind_speed=None, wind_direction=None
+    ):
+        if (
+            date is None
+            or wind_gusts is None
+            or wind_speed is None
+            or wind_direction is None
+        ):
+            print('-> Please provide necessary data about the day to predict')
+            date = input('Date: ')
+            wind_gusts = float(input('Wind gusts: '))
+            wind_speed = float(input('Wind speed: '))
+            wind_direction = int(input('Wind direction: '))
+
+        data = {
+            'date': date,
+            'wind_gusts_10m_mean': wind_gusts,
+            'wind_speed_10m_mean': wind_speed,
+            'winddirection_10m_dominant': wind_direction,
+        }
+        response = requests.post('http://127.0.0.1:8000/predict', json=data)
+        print(response.json())
