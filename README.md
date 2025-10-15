@@ -81,6 +81,7 @@ uv run main.py -h
 | `-e, --explore` | Retourne l'exploration des données |
 | `-i, --insert` | Insère les données nettoyées dans la base de données |
 | `-p, --production` | Retourne les valeurs de production pour une plage de dates |
+| `-t, --train` | Lance l'entrainement de notre modèle |
 | `-P, --predict` | Effectue des prédictions de production |
 
 **Exemples d'utilisation :**
