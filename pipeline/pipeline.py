@@ -11,7 +11,6 @@ from prepare_data.db_handler import DBHandler
 from prepare_data.merge_handler import DataMerger, DataSpliter, HydroDataMerger
 from productors.productors import ProducteurEolien, ProducteurHydro, ProducteurSolaire
 from supabase import Client
-from models.model_saleh.lin_reg import ModelLinearRegression
 
 class Pipeline:
     def __init__(self, client: Client):
@@ -162,11 +161,8 @@ class Pipeline:
         data_hyd.calculer_production()
 
     def start_prediction(self):
-            """
-        Start ML prediction for eolienne production using Linear Regression.
         """
-            # Initialize and run the Linear Regression model
-            model_lr = ModelLinearRegression()
-            model_lr.load()
-            model_lr.split_and_standardize()  
-            mse, r2 = model_lr.run_model()
+        Lance la phase de prédiction (entraînement, évaluation et sauvegarde du modèle).
+        """
+        print("\n Démarrage du processus de prédiction...")
+        run_model()
