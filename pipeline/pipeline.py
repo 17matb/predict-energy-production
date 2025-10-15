@@ -11,7 +11,7 @@ from prepare_data.db_handler import DBHandler
 from prepare_data.merge_handler import DataMerger, DataSpliter, HydroDataMerger
 from productors.productors import ProducteurEolien, ProducteurHydro, ProducteurSolaire
 from supabase import Client
-from models.lin_reg import ModelLinearRegression
+from models.model_saleh.lin_reg import ModelLinearRegression
 
 class Pipeline:
     def __init__(self, client: Client):
