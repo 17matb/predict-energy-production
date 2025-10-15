@@ -28,7 +28,7 @@ def main():
         '-e',
         '--explore',
         action='store_true',
-        help='returns data exploration',
+        help='return data exploration',
     )
     parser.add_argument(
         '-i',
@@ -40,24 +40,51 @@ def main():
         '-p',
         '--production',
         action='store_true',
-        help='returns production values for a date range',
+        help='return production values for a date range',
+    )
+    parser.add_argument(
+        '-t',
+        '--train',
+        action='store_true',
+        help='start a new training for our model',
     )
     parser.add_argument(
         '-P',
         '--predict',
-        action='store_true',
-        help='predicts production',
+        nargs='*',
+        metavar='params',
+        help='predict production: optionally you can provide (in order) <date> <wind_gusts> <wind_speed> <wind_direction> OR launch interactive mode',
     )
     arguments = parser.parse_args()
     pipeline = Pipeline(client=supabase)
+    if (
+        not arguments.explore
+        and not arguments.insert
+        and not arguments.production
+        and not arguments.train
+        and arguments.predict is None
+    ):
+        print(
+            '× Please use flags, you may want to read the help message. Use: uv run main.py -h'
+        )
     if arguments.explore:
         pipeline.data_exploration()
     if arguments.insert:
         pipeline.db_insertion()
     if arguments.production:
         pipeline.get_production_data()
-    if arguments.predict:
-        pipeline.start_prediction()
+    if arguments.train:
+        pipeline.start_train()
+    if arguments.predict is not None:
+        if len(arguments.predict) == 4:
+            pipeline.fetch_prediction(
+                date=arguments.predict[0],
+                wind_gusts=arguments.predict[1],
+                wind_speed=arguments.predict[2],
+                wind_direction=arguments.predict[3],
+            )
+        else:
+            pipeline.fetch_prediction()
 
 
 if __name__ == '__main__':
