@@ -167,4 +167,3 @@ class Pipeline:
         """
         print("\n Démarrage du processus de prédiction...")
         run_model()
-

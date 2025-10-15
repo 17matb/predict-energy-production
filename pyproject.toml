@@ -15,6 +15,7 @@ dependencies = [
     "scikit-learn>=1.7.2",
     "streamlit>=1.50.0",
     "supabase>=2.20.0",
+    "xgboost>=3.0.5",
 ]
 
 [tool.basedpyright]
