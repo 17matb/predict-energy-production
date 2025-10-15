@@ -21,6 +21,7 @@ Les prédictions permettront d'optimiser le fonctionnement des parcs et d'antici
 
 ## 🧩 Architecture du projet
 
+```
 predict_energy_production/
 ├── .venv/
 ├── data/
@@ -42,6 +43,7 @@ predict_energy_production/
 ├── README.md
 └── tests/
     └── test_model.py
+```
 
 ---
 
