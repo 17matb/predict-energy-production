@@ -4,8 +4,7 @@ from fastapi import APIRouter
 from models.data_preparation import transform_date
 from pydantic import BaseModel
 
-model = joblib.load('./models/random_forest_model.pkl')
-router = APIRouter(prefix='/predict', tags=['Predict'])
+router = APIRouter(prefix="/predict", tags=["Predict"])
 
 
 class Input(BaseModel):
@@ -20,7 +19,7 @@ class Output(BaseModel):
     production: float
 
 
-@router.post('/', response_model=Output)
+@router.post("/", response_model=Output)
 def predict(data: Input):
     """
     Predict production for a specific day
@@ -31,13 +30,14 @@ def predict(data: Input):
     Returns:
         Output: date, production (predicted)
     """
+    model = joblib.load("./models/random_forest_model.pkl")
     df = pd.DataFrame(
         [
             {
-                'date': data.date,
-                'wind_gusts_10m_mean': data.wind_gusts_10m_mean,
-                'wind_speed_10m_mean': data.wind_speed_10m_mean,
-                'winddirection_10m_dominant': data.winddirection_10m_dominant,
+                "date": data.date,
+                "wind_gusts_10m_mean": data.wind_gusts_10m_mean,
+                "wind_speed_10m_mean": data.wind_speed_10m_mean,
+                "winddirection_10m_dominant": data.winddirection_10m_dominant,
             }
         ]
     )
