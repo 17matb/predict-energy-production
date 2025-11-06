@@ -75,16 +75,16 @@ def main():
         pipeline.get_production_data()
     if arguments.train:
         pipeline.start_train()
-    # if arguments.predict is not None:
-    #     if len(arguments.predict) == 4:
-    #         pipeline.fetch_prediction(
-    #             date=arguments.predict[0],
-    #             wind_gusts=arguments.predict[1],
-    #             wind_speed=arguments.predict[2],
-    #             wind_direction=arguments.predict[3],
-    #         )
-    #     else:
-    #         pipeline.fetch_prediction()
+    if arguments.predict is not None:
+        if len(arguments.predict) == 4:
+            pipeline.fetch_prediction(
+                date=arguments.predict[0],
+                wind_gusts=arguments.predict[1],
+                wind_speed=arguments.predict[2],
+                wind_direction=arguments.predict[3],
+            )
+        else:
+            pipeline.fetch_prediction()
 
 
 if __name__ == "__main__":
